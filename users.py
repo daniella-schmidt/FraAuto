@@ -38,7 +38,7 @@ def validate_data(Codigo, idSecretaria, idSetor):
         )
         cursor = connection.cursor() 
 
-        cursor.execute("SELECT COUNT(*) FROM Codigo WHERE Codigo = %s", (Codigo,))
+        cursor.execute("SELECT COUNT(*) FROM Biometria WHERE Codigo = %s", (Codigo,))
         if cursor.fetchone()[0] == 0:
             return "Código não existe."
 
@@ -59,49 +59,6 @@ def validate_data(Codigo, idSecretaria, idSetor):
             connection.close()
 
     return None
-
-def salvar_veiculo(Nome_entry, Matricula_entry, Codigo_entry, IdSecretaria_entry, IdSetor_entry):
-    Nome = Nome_entry.get()
-    Matricula = Matricula_entry.get()
-    Codigo = Codigo_entry.get()
-    IdSecretaria = IdSecretaria_entry.get()
-    IdSetor = IdSetor_entry.get()
-
-    if not (Nome and Matricula):
-        messagebox.showerror("Erro", "Preencha todos os campos obrigatórios!")
-        return
-
-    error_message = validate_data(Codigo, IdSecretaria, IdSetor)
-    if error_message:
-        messagebox.showerror("Erro", error_message)
-        return
-
-    try:
-        connection = mysql.connector.connect(
-            host='localhost',  
-            database='FraAuto',  
-            user='root',  
-            password='root'  
-        )
-
-        if connection.is_connected():
-            cursor = connection.cursor()
-            insert_query = """
-                INSERT INTO veiculos (Nome, Matricula, Codigo, IdSecretaria, IdSetor)
-                VALUES (%s, %s, %s, %s, %s)
-            """
-            cursor.execute(insert_query, (Nome, Matricula, Codigo, IdSecretaria, IdSetor))
-            connection.commit()
-            messagebox.showinfo("Sucesso", "Veículo cadastrado com sucesso!")
-
-    except Error as e:
-        print(f"Erro ao inserir dados no MySQL: {e}")
-        messagebox.showerror("Erro", "Erro ao cadastrar o veículo.")
-    finally:
-        if 'cursor' in locals() and cursor:
-            cursor.close()
-        if 'connection' in locals() and connection.is_connected():
-            connection.close()
 
 def carregar_users(users_list):
     try:
@@ -130,7 +87,7 @@ def carregar_users(users_list):
 
 def create_users_tab(notebook):
     users_tab = ttk.Frame(notebook)
-    notebook.add(users_tab, text='Veículos')
+    notebook.add(users_tab, text='Users')
 
     entry_frame = ttk.Frame(users_tab)
     entry_frame.pack(fill='x', padx=10, pady=10)
@@ -154,8 +111,51 @@ def create_users_tab(notebook):
     ttk.Label(entry_frame, text="IdSetor:").grid(column=0, row=5, padx=5, pady=5)
     IdSetor_entry = ttk.Entry(entry_frame, width=20)
     IdSetor_entry.grid(column=1, row=5, padx=5, pady=5)   
+     
+    def salvar_users():
+        Nome = Nome_entry.get()
+        Matricula = Matricula_entry.get()
+        Codigo = Codigo_entry.get()
+        IdSecretaria = IdSecretaria_entry.get()
+        IdSetor = IdSetor_entry.get()
+
+        if not (Nome and Matricula):
+            messagebox.showerror("Erro", "Preencha todos os campos obrigatórios!")
+            return
+
+        error_message = validate_data(Codigo, IdSecretaria, IdSetor)
+        if error_message:
+            messagebox.showerror("Erro", error_message)
+            return
+
+        try:
+            connection = mysql.connector.connect(
+                host='localhost',  
+                database='FraAuto',  
+                user='root',  
+                password='root'  
+            )
+
+            if connection.is_connected():
+                cursor = connection.cursor()
+                insert_query = """
+                    INSERT INTO Usuario (Nome, Matricula, Codigo, IdSecretaria, IdSetor)
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                cursor.execute(insert_query, (Nome, Matricula, Codigo, IdSecretaria, IdSetor))
+                connection.commit()
+                messagebox.showinfo("Sucesso", "Usuário cadastrado com sucesso!")
+
+        except Error as e:
+            print(f"Erro ao inserir dados no MySQL: {e}")
+            messagebox.showerror("Erro", "Erro ao cadastrar usuário.")
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if 'connection' in locals() and connection.is_connected():
+                connection.close()
     
-    save_button = ttk.Button(users_tab, text="Salvar", command=lambda: salvar_veiculo(Nome_entry, Matricula_entry, Codigo_entry, IdSecretaria_entry, IdSetor_entry))
+    save_button = ttk.Button(users_tab, text="Salvar", command=lambda: salvar_users())
     save_button.pack(pady=10)
 
     list_frame = ttk.Frame(users_tab)
@@ -184,7 +184,7 @@ def create_users_tab(notebook):
 def create_app():
     app = tk.Tk()
     app.title("FraAuto")
-    app.geometry("800x600")
+    app.geometry("700x700")
 
     notebook = ttk.Notebook(app)
     notebook.pack(fill='both', expand=True)
