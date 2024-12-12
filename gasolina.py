@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import mysql.connector
 from mysql.connector import Error
+from tkinter import messagebox
+from datetime import datetime
 
 def connect_to_database():
     connection = None
@@ -45,17 +47,16 @@ def gasolina_tab(notebook):
     Status_entry = ttk.Entry(entry_frame, width=20)
     Status_entry.grid(column=1, row=1, padx=5, pady=5)
 
-    ttk.Label(entry_frame, text="D/H abastecimento:").grid(column=0, row=2, padx=5, pady=5)
+    ttk.Label(entry_frame, text="DH_abastecimento:").grid(column=0, row=2, padx=5, pady=5)
     DataHoraAbastecimento_entry = ttk.Entry(entry_frame, width=20)
     DataHoraAbastecimento_entry.grid(column=1, row=2, padx=5, pady=5)
     
     def salvar_gaso():
         Placa = Placa_entry.get()
-        Matricula = Matricula_entry.get()
-        Dh_inicial = Dh_inicial_entry.get()
-        Onom_inicial = Onom_inicial_entry.get()
+        Status = Status_entry.get()
+        DH_abastecimento = DataHoraAbastecimento_entry.get()
 
-        if not (Placa and Matricula and Dh_inicial and Onom_inicial):
+        if not (Placa and Status and DH_abastecimento and Status):
             messagebox.showerror("Erro", "Preencha todos os campos obrigatórios!")
             return
 
@@ -69,11 +70,8 @@ def gasolina_tab(notebook):
 
             if connection.is_connected():
                 cursor = connection.cursor()
-                
-                print(f"Placa: {Placa}, Matricula: {Matricula}, D/H inicial: {Dh_inicial}, Onom. inicial: {Onom_inicial}")
-
                 insert_query = """
-                    INSERT INTO Registro (Placa, Matricula, DH_inicial, Odom_inicial)
+                    INSERT INTO Gasolina (Placa, Status, DH_abastecimento)
                     VALUES (%s, %s, %s, %s)
                 """
                 cursor.execute(insert_query, (Placa, Matricula, Dh_inicial, Onom_inicial))
