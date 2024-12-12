@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import mysql.connector
 from mysql.connector import Error
+from tkinter import messagebox
 
 def connect_to_database():
     connection = None
@@ -17,7 +18,7 @@ def connect_to_database():
         if connection.is_connected():
             cursor = connection.cursor()
             cursor.execute("SELECT DATABASE();")
-            reCord = cursor.fetchone()
+            record = cursor.fetchone()
 
     except Error as e:
         print(f"Erro ao conectar ao MySQL: {e}")
@@ -27,6 +28,50 @@ def connect_to_database():
         if connection and connection.is_connected():
             connection.close()
 
+def validate_data(ano, idFabricante, idModelo, idSecretaria, idSetor):
+    # Valida o ano (deve ser um número e estar entre 1900 e o ano atual)
+    if not ano.isdigit() or not (1900 <= int(ano) <= 2024):
+        return "Ano inválido. O ano deve estar entre 1900 e 2024."
+    
+    # Valida se os IDs existem no banco de dados
+    try:
+        connection = mysql.connector.connect(
+            host='localhost',
+            database='FraAuto',
+            user='root',
+            password='root'
+        )
+        cursor = connection.cursor()
+
+        # Valida IdFabricante
+        cursor.execute("SELECT COUNT(*) FROM Fabricante WHERE IdFabricante = %s", (idFabricante,))
+        if cursor.fetchone()[0] == 0:
+            return "IdFabricante não existe."
+
+        # Valida IdModelo
+        cursor.execute("SELECT COUNT(*) FROM Modelo WHERE IdModelo = %s", (idModelo,))
+        if cursor.fetchone()[0] == 0:
+            return "IdModelo não existe."
+
+        # Valida IdSecretaria
+        cursor.execute("SELECT COUNT(*) FROM Secretaria WHERE IdSecretaria = %s", (idSecretaria,))
+        if cursor.fetchone()[0] == 0:
+            return "IdSecretaria não existe."
+
+        # Valida IdSetor
+        cursor.execute("SELECT COUNT(*) FROM Setor WHERE IdSetor = %s", (idSetor,))
+        if cursor.fetchone()[0] == 0:
+            return "IdSetor não existe."
+
+    except Error as e:
+        return f"Erro ao validar dados: {e}"
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+    
+    return None
 
 def create_vehicle_management_tab(notebook):
     vehicle_tab = ttk.Frame(notebook)
@@ -66,7 +111,7 @@ def create_vehicle_management_tab(notebook):
     ttk.Label(entry_frame, text="IdSetor:").grid(column=0, row=8, padx=5, pady=5)
     IdSetor_entry = ttk.Entry(entry_frame, width=20)
     IdSetor_entry.grid(column=1, row=8, padx=5, pady=5)
-    
+
     ttk.Label(entry_frame, text="Frotas:").grid(column=0, row=9, padx=5, pady=5)
     Frotas_entry = ttk.Entry(entry_frame, width=20)
     Frotas_entry.grid(column=1, row=9, padx=5, pady=5)
@@ -82,43 +127,51 @@ def create_vehicle_management_tab(notebook):
         IdSetor = IdSetor_entry.get()
         Frotas = Frotas_entry.get()
 
-        if Placa and Ano and Cor:
-            try:
-                connection = mysql.connector.connect(
-                    host='localhost',
-                    database='FraAuto',
-                    user='root',
-                    password='root'
-                )
+        # Verifica se todos os campos obrigatórios foram preenchidos
+        if not (Placa and Ano and Cor):
+            messagebox.showerror("Erro", "Preencha todos os campos obrigatórios!")
+            return
 
-                cursor = connection.cursor()
-                cursor.execute(
-                    """
-                    INSERT INTO Veiculo (Placa, Ano, Cor, Odometro, IdFabricante, IdModelo, IdSecretaria, IdSetor, Frotas) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, 
-                    (Placa, Ano, Cor, Odometro, IdFabricante, IdModelo, IdSecretaria, IdSetor, Frotas)
-                )
-                connection.commit()
-                print("Veículo cadastrado com sucesso!")
-            except Error as e:
-                print(f"Erro ao cadastrar veículo: {e}")
-            finally:
-                if 'cursor' in locals() and cursor:
-                    cursor.close()
-                if 'connection' in locals() and connection.is_connected():
-                    connection.close()
-        else:
-            print("Preencha todos os campos obrigatórios!")
+        # Valida os dados
+        error_message = validate_data(Ano, IdFabricante, IdModelo, IdSecretaria, IdSetor)
+        if error_message:
+            messagebox.showerror("Erro", error_message)
+            return
+
+        try:
+            connection = mysql.connector.connect(
+                host='localhost',
+                database='FraAuto',
+                user='root',
+                password='root'
+            )
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                INSERT INTO Veiculo (Placa, Ano, Cor, Odometro, IdFabricante, IdModelo, IdSecretaria, IdSetor, Frotas) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, 
+                (Placa, Ano, Cor, Odometro, IdFabricante, IdModelo, IdSecretaria, IdSetor, Frotas)
+            )
+            connection.commit()
+            messagebox.showinfo("Sucesso", "Veículo cadastrado com sucesso!")
+        except Error as e:
+            messagebox.showerror("Erro", f"Erro ao cadastrar veículo: {e}")
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if 'connection' in locals() and connection.is_connected():
+                connection.close()
 
     salvar_button = ttk.Button(entry_frame, text="Salvar", command=salvar_veiculo)
     salvar_button.grid(column=0, row=10, columnspan=2, padx=5, pady=10)
 
+    # Crie um frame para a lista de veículos
     list_frame = ttk.Frame(vehicle_tab)
     list_frame.pack(fill='both', expand=True, padx=10, pady=10)
 
     veiculos_list = ttk.Treeview(list_frame)
-    veiculos_list['columns'] = ('Placa', 'Ano', 'Cor', 'Odometro', 'IdFabricante', 'IdModelo', 'IdSecretaria', 'IdSetor',  'Frotas')
+    veiculos_list['columns'] = ('Placa', 'Ano', 'Cor', 'Odometro', 'IdFabricante', 'IdModelo', 'IdSecretaria', 'IdSetor', 'Frotas')
 
     veiculos_list.column("#0", width=0, stretch=tk.NO)
     veiculos_list.column("Placa", anchor=tk.W, width=100)
@@ -143,6 +196,7 @@ def create_vehicle_management_tab(notebook):
 
     veiculos_list.pack(fill='both', expand=True)
 
+    # Carregar a lista de veículos
     def carregar_veiculos():
         try:
             connection = mysql.connector.connect(
@@ -151,12 +205,11 @@ def create_vehicle_management_tab(notebook):
                 user='root',
                 password='root'
             )
-
             cursor = connection.cursor()
             cursor.execute("SELECT * FROM `FraAuto`.`Veiculo`")
             veiculos = cursor.fetchall()
 
-            veiculos_list.delete(*veiculos_list.get_children()) 
+            veiculos_list.delete(*veiculos_list.get_children())
 
             for veiculo in veiculos:
                 veiculos_list.insert('', 'end', values=veiculo)
@@ -169,7 +222,7 @@ def create_vehicle_management_tab(notebook):
                 connection.close()
 
     carregar_veiculos()
-    
+
 def create_app():
     app = tk.Tk()
     app.title("FraAuto")
