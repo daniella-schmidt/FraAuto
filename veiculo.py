@@ -29,11 +29,9 @@ def connect_to_database():
             connection.close()
 
 def validate_data(ano, idFabricante, idModelo, idSecretaria, idSetor):
-    # Valida o ano (deve ser um número e estar entre 1900 e o ano atual)
     if not ano.isdigit() or not (1900 <= int(ano) <= 2024):
         return "Ano inválido. O ano deve estar entre 1900 e 2024."
     
-    # Valida se os IDs existem no banco de dados
     try:
         connection = mysql.connector.connect(
             host='localhost',
@@ -43,22 +41,18 @@ def validate_data(ano, idFabricante, idModelo, idSecretaria, idSetor):
         )
         cursor = connection.cursor()
 
-        # Valida IdFabricante
         cursor.execute("SELECT COUNT(*) FROM Fabricante WHERE IdFabricante = %s", (idFabricante,))
         if cursor.fetchone()[0] == 0:
             return "IdFabricante não existe."
 
-        # Valida IdModelo
         cursor.execute("SELECT COUNT(*) FROM Modelo WHERE IdModelo = %s", (idModelo,))
         if cursor.fetchone()[0] == 0:
             return "IdModelo não existe."
 
-        # Valida IdSecretaria
         cursor.execute("SELECT COUNT(*) FROM Secretaria WHERE IdSecretaria = %s", (idSecretaria,))
         if cursor.fetchone()[0] == 0:
             return "IdSecretaria não existe."
 
-        # Valida IdSetor
         cursor.execute("SELECT COUNT(*) FROM Setor WHERE IdSetor = %s", (idSetor,))
         if cursor.fetchone()[0] == 0:
             return "IdSetor não existe."
@@ -127,12 +121,10 @@ def create_vehicle_management_tab(notebook):
         IdSetor = IdSetor_entry.get()
         Frotas = Frotas_entry.get()
 
-        # Verifica se todos os campos obrigatórios foram preenchidos
         if not (Placa and Ano and Cor):
             messagebox.showerror("Erro", "Preencha todos os campos obrigatórios!")
             return
 
-        # Valida os dados
         error_message = validate_data(Ano, IdFabricante, IdModelo, IdSecretaria, IdSetor)
         if error_message:
             messagebox.showerror("Erro", error_message)
@@ -166,7 +158,6 @@ def create_vehicle_management_tab(notebook):
     salvar_button = ttk.Button(entry_frame, text="Salvar", command=salvar_veiculo)
     salvar_button.grid(column=0, row=10, columnspan=2, padx=5, pady=10)
 
-    # Crie um frame para a lista de veículos
     list_frame = ttk.Frame(vehicle_tab)
     list_frame.pack(fill='both', expand=True, padx=10, pady=10)
 
@@ -196,7 +187,6 @@ def create_vehicle_management_tab(notebook):
 
     veiculos_list.pack(fill='both', expand=True)
 
-    # Carregar a lista de veículos
     def carregar_veiculos():
         try:
             connection = mysql.connector.connect(
