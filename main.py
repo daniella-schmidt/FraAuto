@@ -30,24 +30,23 @@ def connect_to_database():
 def create_dashboard_tab(notebook):
     dashboard_tab = ttk.Frame(notebook)
     notebook.add(dashboard_tab, text='Dashboard')
-    # Adicione widgets para o dashboard aqui
 
 def create_users_tab(notebook):
     users_tab = ttk.Frame(notebook)
     notebook.add(users_tab, text='Usuários')
-    # Adicione widgets para gerenciar usuários aqui
 
 def create_vehicle_management_tab(notebook):
     vehicle_tab = ttk.Frame(notebook)
     notebook.add(vehicle_tab, text='Gerenciamento de Veículos')
     
-
-
 def create_rental_tab(notebook):
     rental_tab = ttk.Frame(notebook)
-    notebook.add(rental_tab, text='Retirada/Entrega')
-    # Adicione widgets para registrar retirada e entrega aqui
+    notebook.add(rental_tab, text='Retirada')
 
+def create_dev_tab(notebook):
+    dev_tab = ttk.Frame(notebook)
+    notebook.add(dev_tab, text='Devolução')
+    
 def create_app():
     app = tk.Tk()
     app.title("FraAuto")
@@ -60,6 +59,7 @@ def create_app():
     create_users_tab(notebook)
     create_vehicle_management_tab(notebook)
     create_rental_tab(notebook)
+    create_dev_tab(notebook)
 
     app.mainloop()
 
