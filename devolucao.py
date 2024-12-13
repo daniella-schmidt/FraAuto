@@ -59,7 +59,7 @@ def devolucao_tab(notebook):
                 cursor.execute(check_query, (Placa,))
                 result = cursor.fetchone()
                 if result[0] == 0:
-                    messagebox.showwarning("Aviso", "Placa não encontrada no sistema.")
+                    messagebox.showwarning("Aviso", "Placa não encontrada.")
                     return
 
                 update_query = """
@@ -71,7 +71,7 @@ def devolucao_tab(notebook):
                 connection.commit()
 
                 if cursor.rowcount > 0:
-                    messagebox.showinfo("Sucesso", "Devolução registrada com sucesso!")
+                    messagebox.showinfo("Sucesso", "Registrada com sucesso!")
                 else:
                     messagebox.showwarning("Aviso", "Nenhuma alteração foi feita.")
 

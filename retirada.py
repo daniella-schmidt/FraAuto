@@ -94,7 +94,7 @@ def registro_tab(notebook):
                 cursor.execute(insert_query, (Placa, Matricula, Dh_inicial, Onom_inicial))
                 connection.commit()
 
-                messagebox.showinfo("Sucesso", "Registro cadastrado com sucesso!")
+                messagebox.showinfo("Sucesso", "Registrada com sucesso!")
 
         except Error as e:
             print(f"Erro ao salvar registro no MySQL: {e}")

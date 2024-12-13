@@ -36,7 +36,7 @@ def gasolina_tab(notebook):
     tab1 = ttk.Frame(tab_control)
     tab_control.add(tab1, text='Gasolina')
     
-    entry_frame = ttk.Frame(tab1)  # Corrigido para usar 'tab1' em vez de 'gasolina_tab'
+    entry_frame = ttk.Frame(tab1)
     entry_frame.pack(fill='x', padx=10, pady=10)
 
     ttk.Label(entry_frame, text="Placa:").grid(column=0, row=0, padx=5, pady=5)
@@ -56,7 +56,7 @@ def gasolina_tab(notebook):
         Status = Status_entry.get()
         DH_abastecimento = DataHoraAbastecimento_entry.get()
 
-        if not (Placa and Status and DH_abastecimento and Status):
+        if not (Placa and Status and DH_abastecimento):
             messagebox.showerror("Erro", "Preencha todos os campos obrigatórios!")
             return
 
@@ -70,14 +70,23 @@ def gasolina_tab(notebook):
 
             if connection.is_connected():
                 cursor = connection.cursor()
+                
+                # Verificar se a Placa existe na tabela Veiculo
+                cursor.execute("SELECT COUNT(*) FROM Veiculo WHERE Placa = %s", (Placa,))
+                count = cursor.fetchone()[0]
+
+                if count == 0:
+                    messagebox.showerror("Erro", "Placa não encontrada.")
+                    return
+
                 insert_query = """
-                    INSERT INTO Gasolina (Placa, Status, DH_abastecimento)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO Gasolina (Placa, Status, DataHoraAbastecimento)
+                    VALUES (%s, %s, %s)
                 """
-                cursor.execute(insert_query, (Placa, Matricula, Dh_inicial, Onom_inicial))
+                cursor.execute(insert_query, (Placa, Status, DH_abastecimento))
                 connection.commit()
 
-                messagebox.showinfo("Sucesso", "Registro cadastrado com sucesso!")
+                messagebox.showinfo("Sucesso", "Registrado com sucesso!")
 
         except Error as e:
             print(f"Erro ao salvar registro no MySQL: {e}")
