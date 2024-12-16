@@ -30,7 +30,7 @@ def connect_to_database():
 
 def validate_data(ano, idFabricante, idModelo, idSecretaria, idSetor):
     if not ano.isdigit() or not (1900 <= int(ano) <= 2024):
-        return "Ano inválido. O ano deve estar entre 1900 e 2024."
+        return "Ano inválido. O ano deve estar entre 1900  e 2024."
     
     try:
         connection = mysql.connector.connect(
@@ -109,6 +109,10 @@ def create_vehicle_management_tab(notebook):
     ttk.Label(entry_frame, text="Frotas:").grid(column=0, row=9, padx=5, pady=5)
     Frotas_entry = ttk.Entry(entry_frame, width=20)
     Frotas_entry.grid(column=1, row=9, padx=5, pady=5)
+    
+    ttk.Label(entry_frame, text="Garantia:").grid(column=0, row=10, padx=5, pady=5)
+    Garantia_entry = ttk.Entry(entry_frame, width=20)
+    Garantia_entry.grid(column=1, row=10, padx=5, pady=5)
 
     def salvar_veiculo():
         Placa = Placa_entry.get()
@@ -120,6 +124,7 @@ def create_vehicle_management_tab(notebook):
         IdSecretaria = IdSecretaria_entry.get()
         IdSetor = IdSetor_entry.get()
         Frotas = Frotas_entry.get()
+        Garantia = Garantia_entry.get()
 
         if not (Placa and Ano and Cor):
             messagebox.showerror("Erro", "Preencha todos os campos obrigatórios!")
@@ -140,10 +145,10 @@ def create_vehicle_management_tab(notebook):
             cursor = connection.cursor()
             cursor.execute(
                 """
-                INSERT INTO Veiculo (Placa, Ano, Cor, Odometro, IdFabricante, IdModelo, IdSecretaria, IdSetor, Frotas) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO Veiculo (Placa, Ano, Cor, Odometro, IdFabricante, IdModelo, IdSecretaria, IdSetor, Frotas, Garantia) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, 
-                (Placa, Ano, Cor, Odometro, IdFabricante, IdModelo, IdSecretaria, IdSetor, Frotas)
+                (Placa, Ano, Cor, Odometro, IdFabricante, IdModelo, IdSecretaria, IdSetor, Frotas, Garantia)
             )
             connection.commit()
             messagebox.showinfo("Sucesso", "Veículo cadastrado com sucesso!")
@@ -156,13 +161,13 @@ def create_vehicle_management_tab(notebook):
                 connection.close()
 
     salvar_button = ttk.Button(entry_frame, text="Salvar", command=salvar_veiculo)
-    salvar_button.grid(column=0, row=10, columnspan=2, padx=5, pady=10)
+    salvar_button.grid(column=0, row=11, columnspan=2, padx=5, pady=10)
 
     list_frame = ttk.Frame(vehicle_tab)
     list_frame.pack(fill='both', expand=True, padx=10, pady=10)
 
     veiculos_list = ttk.Treeview(list_frame)
-    veiculos_list['columns'] = ('Placa', 'Ano', 'Cor', 'Odometro', 'IdFabricante', 'IdModelo', 'IdSecretaria', 'IdSetor', 'Frotas')
+    veiculos_list['columns'] = ('Placa', 'Ano', 'Cor', 'Odometro', 'IdFabricante', 'IdModelo', 'IdSecretaria', 'IdSetor', 'Frotas', 'Garantia') 
 
     veiculos_list.column("#0", width=0, stretch=tk.NO)
     veiculos_list.column("Placa", anchor=tk.W, width=100)
@@ -174,6 +179,7 @@ def create_vehicle_management_tab(notebook):
     veiculos_list.column("IdSecretaria", anchor=tk.W, width=100)
     veiculos_list.column("IdSetor", anchor=tk.W, width=100)
     veiculos_list.column("Frotas", anchor=tk.W, width=50)
+    veiculos_list.column("Garantia", anchor=tk.W, width=50)
 
     veiculos_list.heading("Placa", text="Placa", anchor=tk.W)
     veiculos_list.heading("Ano", text="Ano", anchor=tk.W)
@@ -184,6 +190,7 @@ def create_vehicle_management_tab(notebook):
     veiculos_list.heading("IdSecretaria", text="IdSecretaria", anchor=tk.W)
     veiculos_list.heading("IdSetor", text="IdSetor", anchor=tk.W)
     veiculos_list.heading("Frotas", text="Frotas", anchor=tk.W)
+    veiculos_list.heading("Garantia", text="Garantia", anchor=tk.W)
 
     veiculos_list.pack(fill='both', expand=True)
 

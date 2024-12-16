@@ -4,6 +4,7 @@ import mysql.connector
 from mysql.connector import Error
 from tkinter import messagebox
 from datetime import datetime
+import decimal  
 
 def devolucao_tab(notebook):
     devolucao_tab = ttk.Frame(notebook)
@@ -44,6 +45,8 @@ def devolucao_tab(notebook):
             messagebox.showerror("Erro", "O campo 'Odom. final' deve conter apenas números!")
             return
 
+        Odom_final = int(Odom_final) 
+
         try:
             connection = mysql.connector.connect(
                 host='localhost',
@@ -55,22 +58,30 @@ def devolucao_tab(notebook):
             if connection.is_connected():
                 cursor = connection.cursor()
 
-                check_query = "SELECT COUNT(*) FROM Registro WHERE Placa = %s"
-                cursor.execute(check_query, (Placa,))
-                result = cursor.fetchone()
-                if result[0] == 0:
-                    messagebox.showwarning("Aviso", "Placa não encontrada.")
+                odometro_query = "SELECT Odom_inicial FROM Registro WHERE Placa = %s AND DH_final IS NULL AND Odom_final IS NULL"
+                cursor.execute(odometro_query, (Placa,))
+                odometro_inicial = cursor.fetchone()
+
+                if odometro_inicial is None:
+                    messagebox.showwarning("Aviso", "Registro não encontrado ou já finalizado.")
                     return
 
-                # Atualiza a tabela Registro
+                odometro_inicial = odometro_inicial[0]
+
+                if isinstance(odometro_inicial, (float, decimal.Decimal)):
+                    odometro_inicial = float(odometro_inicial)  
+
+                if Odom_final < odometro_inicial:
+                    messagebox.showerror("Erro", "O odômetro final não pode ser menor que o odômetro inicial!")
+                    return
+
                 update_query = """
                     UPDATE Registro
                     SET `DH_final` = %s, `Odom_final` = %s
-                    WHERE Placa = %s
+                    WHERE Placa = %s AND DH_final IS NULL AND Odom_final IS NULL
                 """
                 cursor.execute(update_query, (Dh_devolucao, Odom_final, Placa))
-                
-                # Atualiza a tabela Veiculo
+
                 update_veiculo_query = """
                     UPDATE Veiculo
                     SET odometro = %s
@@ -93,7 +104,7 @@ def devolucao_tab(notebook):
                 cursor.close()
             if 'connection' in locals() and connection.is_connected():
                 connection.close()
-
+            
     save_devolucao_button = ttk.Button(devolucao_tab, text="Salvar", command=salvar_devolucao)
     save_devolucao_button.pack(pady=10)
 

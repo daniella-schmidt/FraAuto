@@ -5,7 +5,6 @@ from mysql.connector import Error
 from tkinter import messagebox
 from datetime import datetime
 
-
 def registro_tab(notebook):
     registro_tab = ttk.Frame(notebook)
     notebook.add(registro_tab, text='Registro')
@@ -84,8 +83,6 @@ def registro_tab(notebook):
 
             if connection.is_connected():
                 cursor = connection.cursor()
-                
-                print(f"Placa: {Placa}, Matricula: {Matricula}, D/H inicial: {Dh_inicial}, Onom. inicial: {Onom_inicial}")
 
                 insert_query = """
                     INSERT INTO Registro (Placa, Matricula, DH_inicial, Odom_inicial)
@@ -107,7 +104,6 @@ def registro_tab(notebook):
 
     salvar_button = ttk.Button(entry_frame, text="Salvar", command=salvar_registro)
     salvar_button.grid(column=0, row=5, columnspan=2, pady=10)
-
 
 root = tk.Tk()
 root.title("FraAuto")
