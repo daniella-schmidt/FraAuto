@@ -105,7 +105,7 @@ def registro_tab(notebook):
             if 'connection' in locals() and connection.is_connected():
                 connection.close()
 
-    salvar_button = ttk.Button(entry_frame, text="Salvar Registro", command=salvar_registro)
+    salvar_button = ttk.Button(entry_frame, text="Salvar", command=salvar_registro)
     salvar_button.grid(column=0, row=5, columnspan=2, pady=10)
 
 

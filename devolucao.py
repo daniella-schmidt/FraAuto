@@ -62,12 +62,22 @@ def devolucao_tab(notebook):
                     messagebox.showwarning("Aviso", "Placa não encontrada.")
                     return
 
+                # Atualiza a tabela Registro
                 update_query = """
                     UPDATE Registro
-                    SET `D/H final` = %s, `Odom. final` = %s
+                    SET `DH_final` = %s, `Odom_final` = %s
                     WHERE Placa = %s
                 """
                 cursor.execute(update_query, (Dh_devolucao, Odom_final, Placa))
+                
+                # Atualiza a tabela Veiculo
+                update_veiculo_query = """
+                    UPDATE Veiculo
+                    SET odometro = %s
+                    WHERE Placa = %s
+                """
+                cursor.execute(update_veiculo_query, (Odom_final, Placa))
+                
                 connection.commit()
 
                 if cursor.rowcount > 0:
@@ -84,7 +94,7 @@ def devolucao_tab(notebook):
             if 'connection' in locals() and connection.is_connected():
                 connection.close()
 
-    save_devolucao_button = ttk.Button(devolucao_tab, text="Registrar Devolução", command=salvar_devolucao)
+    save_devolucao_button = ttk.Button(devolucao_tab, text="Salvar", command=salvar_devolucao)
     save_devolucao_button.pack(pady=10)
 
 def create_app():
